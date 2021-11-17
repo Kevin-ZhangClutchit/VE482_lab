@@ -14,6 +14,7 @@
 #include <linux/jbd2.h>
 #include <linux/parser.h>
 #include <linux/blkdev.h>
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0)
 #include <linux/uio.h>
 #endif
@@ -775,10 +776,10 @@ static int dadfs_load_journal(struct super_block *sb, int devnum) {
     struct dadfs_super_block *sfs_sb = DADFS_SB(sb);
 
     dev = new_decode_dev(devnum);
-    printk(KERN_INFO
-    "Journal device is: %s\n", bdevname(dev, b));
 
     bdev = blkdev_get_by_dev(dev, FMODE_READ | FMODE_WRITE | FMODE_EXCL, sb);
+    printk(KERN_INFO
+    "Journal device is: %s\n", bdevname(bdev, b));
     if (IS_ERR(bdev))
         return 1;
     blocksize = sb->s_blocksize;
@@ -972,6 +973,8 @@ static struct dentry *dadfs_mount(struct file_system_type *fs_type,
                                   int flags, const char *dev_name,
                                   void *data) {
     struct dentry *ret;
+    printk(KERN_INFO
+    "Hello World\n");
 
     ret = mount_bdev(fs_type, flags, dev_name, data, dadfs_fill_super);
 
