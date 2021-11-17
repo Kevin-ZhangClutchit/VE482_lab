@@ -776,7 +776,7 @@ static int dadfs_load_journal(struct super_block *sb, int devnum) {
 
     dev = new_decode_dev(devnum);
     printk(KERN_INFO
-    "Journal device is: %s\n", __bdevname(dev, b));
+    "Journal device is: %s\n", bdevname(dev, b));
 
     bdev = blkdev_get_by_dev(dev, FMODE_READ | FMODE_WRITE | FMODE_EXCL, sb);
     if (IS_ERR(bdev))
