@@ -143,7 +143,192 @@
 
   * Replace almost all the `oldest` with `youngest` in `free_yielded`
 
+  ```c
+  vir_bytes free_yielded(vir_bytes max_bytes)
+  {
+  
+  /* PRIVATE yielded_t *lru_youngest = NULL, *lru_oldest = NULL; */
+  	vir_bytes freed = 0;
+  	int blocks = 0;
+  	
+  	while(freed < max_bytes && lru_youngest) {
+  		SLABSANE(lru_youngest);
+  		freed += freeyieldednode(lru_youngest, 1);
+  		blocks++;
+  	}
+  
+  	return freed;
+  }
+  ```
+
+
   * In `lmfs_get_block`, replace `front` with `rear`
+
+```c
+struct buf *lmfs_get_block(
+  register dev_t dev,		/* on which device is the block? */
+  register block_t block,	/* which block is wanted? */
+  int only_search		/* if NO_READ, don't read, else act normal */
+)
+{
+/* Check to see if the requested block is in the block cache.  If so, return
+ * a pointer to it.  If not, evict some other block and fetch it (unless
+ * 'only_search' is 1).  All the blocks in the cache that are not in use
+ * are linked together in a chain, with 'front' pointing to the least recently
+ * used block and 'rear' to the most recently used block.  If 'only_search' is
+ * 1, the block being requested will be overwritten in its entirety, so it is
+ * only necessary to see if it is in the cache; if it is not, any free buffer
+ * will do.  It is not necessary to actually read the block in from disk.
+ * If 'only_search' is PREFETCH, the block need not be read from the disk,
+ * and the device is not to be marked on the block, so callers can tell if
+ * the block returned is valid.
+ * In addition to the LRU chain, there is also a hash chain to link together
+ * blocks whose block numbers end with the same bit strings, for fast lookup.
+ */
+
+  int b;
+  static struct buf *bp, *prev_ptr;
+  u64_t yieldid = VM_BLOCKID_NONE, getid = make64(dev, block);
+
+  assert(buf_hash);
+  assert(buf);
+  assert(nr_bufs > 0);
+
+  ASSERT(fs_block_size > 0);
+
+  assert(dev != NO_DEV);
+
+  /* Search the hash chain for (dev, block). Do_read() can use 
+   * lmfs_get_block(NO_DEV ...) to get an unnamed block to fill with zeros when
+   * someone wants to read from a hole in a file, in which case this search
+   * is skipped
+   */
+  b = BUFHASH(block);
+  bp = buf_hash[b];
+  while (bp != NULL) {
+  	if (bp->lmfs_blocknr == block && bp->lmfs_dev == dev) {
+  		/* Block needed has been found. */
+  		if (bp->lmfs_count == 0) rm_lru(bp);
+  		bp->lmfs_count++;	/* record that block is in use */
+  		ASSERT(bp->lmfs_bytes == fs_block_size);
+  		ASSERT(bp->lmfs_dev == dev);
+  		ASSERT(bp->lmfs_dev != NO_DEV);
+  		ASSERT(bp->data);
+  		return(bp);
+  	} else {
+  		/* This block is not the one sought. */
+  		bp = bp->lmfs_hash; /* move to next block on hash chain */
+  	}
+  }
+
+  /* Desired block is not on available chain.  Take oldest block ('front'). */
+  if ((bp = rear) == NULL) panic("all buffers in use: %d", nr_bufs);
+
+  if(bp->lmfs_bytes < fs_block_size) {
+	ASSERT(!bp->data);
+	ASSERT(bp->lmfs_bytes == 0);
+	if(!(bp->data = alloc_contig( (size_t) fs_block_size, 0, NULL))) {
+		printf("fs cache: couldn't allocate a new block.\n");
+		for(bp = rear;
+			bp && bp->lmfs_bytes < fs_block_size; bp = bp->lmfs_next)
+			;
+		if(!bp) {
+			panic("no buffer available");
+		}
+	} else {
+  		bp->lmfs_bytes = fs_block_size;
+	}
+  }
+
+  ASSERT(bp);
+  ASSERT(bp->data);
+  ASSERT(bp->lmfs_bytes == fs_block_size);
+  ASSERT(bp->lmfs_count == 0);
+
+  rm_lru(bp);
+
+  /* Remove the block that was just taken from its hash chain. */
+  b = BUFHASH(bp->lmfs_blocknr);
+  prev_ptr = buf_hash[b];
+  if (prev_ptr == bp) {
+	buf_hash[b] = bp->lmfs_hash;
+  } else {
+	/* The block just taken is not on the front of its hash chain. */
+	while (prev_ptr->lmfs_hash != NULL)
+		if (prev_ptr->lmfs_hash == bp) {
+			prev_ptr->lmfs_hash = bp->lmfs_hash;	/* found it */
+			break;
+		} else {
+			prev_ptr = prev_ptr->lmfs_hash;	/* keep looking */
+		}
+  }
+
+  /* If the block taken is dirty, make it clean by writing it to the disk.
+   * Avoid hysteresis by flushing all other dirty blocks for the same device.
+   */
+  if (bp->lmfs_dev != NO_DEV) {
+	if (bp->lmfs_dirt == BP_DIRTY) flushall(bp->lmfs_dev);
+
+	/* Are we throwing out a block that contained something?
+	 * Give it to VM for the second-layer cache.
+	 */
+	yieldid = make64(bp->lmfs_dev, bp->lmfs_blocknr);
+	assert(bp->lmfs_bytes == fs_block_size);
+	bp->lmfs_dev = NO_DEV;
+  }
+
+  /* Fill in block's parameters and add it to the hash chain where it goes. */
+  MARKCLEAN(bp);		/* NO_DEV blocks may be marked dirty */
+  bp->lmfs_dev = dev;		/* fill in device number */
+  bp->lmfs_blocknr = block;	/* fill in block number */
+  bp->lmfs_count++;		/* record that block is being used */
+  b = BUFHASH(bp->lmfs_blocknr);
+  bp->lmfs_hash = buf_hash[b];
+
+  buf_hash[b] = bp;		/* add to hash list */
+
+  assert(dev != NO_DEV);
+
+  /* Go get the requested block unless searching or prefetching. */
+  if(only_search == PREFETCH || only_search == NORMAL) {
+	/* Block is not found in our cache, but we do want it
+	 * if it's in the vm cache.
+	 */
+	if(vmcache) {
+		/* If we can satisfy the PREFETCH or NORMAL request 
+		 * from the vm cache, work is done.
+		 */
+		if(vm_yield_block_get_block(yieldid, getid,
+			bp->data, fs_block_size) == OK) {
+			return bp;
+		}
+	}
+  }
+
+  if(only_search == PREFETCH) {
+	/* PREFETCH: don't do i/o. */
+	bp->lmfs_dev = NO_DEV;
+  } else if (only_search == NORMAL) {
+	read_block(bp);
+  } else if(only_search == NO_READ) {
+	/* we want this block, but its contents
+	 * will be overwritten. VM has to forget
+	 * about it.
+	 */
+	if(vmcache) {
+		vm_forgetblock(getid);
+	}
+  } else
+	panic("unexpected only_search value: %d", only_search);
+
+  assert(bp->data);
+
+  return(bp);			/* return the newly acquired block */
+}
+```
+
+
+
 
   * recompile the kernel
 
