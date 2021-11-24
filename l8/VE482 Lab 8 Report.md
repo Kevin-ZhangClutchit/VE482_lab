@@ -106,7 +106,31 @@
 ### 2.2 Mum’s Really Unfair!
 
 - **What algorithm is used by default in Minix 3 to handle pagefault? Find its implementation and study it closely.**
+
+  Just as hinted by the introduction part, Minix3 use **LRU** algorithm to handle pagefault. The implementation is written in `/servers/vm/pagefault.c` in `Minix 3.2.1`.
+
+  * `pf_errstr`: a function used to transfer the detected `err` to `char*`
+  * `do_pagefaults`: 
+    * this function first decode the input `message` to get the `endpoint`,`addr`&`err`
+    * Then it first check whether the `endpoint` (the sender of the message) is valid.
+    * After check `endpoint`, it checks whether the memory is valid, assert error if needed.
+    * After checking whether memory is valid, if the process wants to `write` to the memory. Check whether the memory is writtable.
+    * Then calculate the offset of memory.
+    * After all these, handle the page fault accordingly and reactivate the process.
+  * `do_memory`: parse the memory request. Check whether valid and call `handle_memory` if necessary.
+  * `handle_memory`:
+    * calculate the needed `page_size`
+    * check the existence and the write access of the target memory.
+    * allocate the memory and update necessary informations.
+
 - **Use the top command to keep track of your used memory and cache, then run `time grep -r "mum" /usr/src`. Run the command again. What do you notice?**
+
+  * First time: 8.01 real 0.25 user 5.00 sys
+  * Second time: 2.45 real 0.73 user 1.71 sys
+  * Notice: The `real` time & `sys` time drops dramatically while the `usr` time increases. As the search has just been carried out, due to `LRU` algorithm, it will replace an oldest page and when we carried out the second search, as it was cached, the search speed will be much faster and no need to handle more `page fault`, system time decreases.
+
 - **Adjust the implementation of LRU into MRU and recompile the kernel.**
+
 - **Use the top command to keep track of your used memory and cache, then run `time grep -r "mum" /usr/src`. Run the command again. What do you notice?**
+
 - **Discuss the different behaviours of LRU and MRU as well as the consequences**
