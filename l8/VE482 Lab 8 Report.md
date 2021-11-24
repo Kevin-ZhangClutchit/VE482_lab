@@ -8,7 +8,7 @@
 
   Virtual Memory
 
-- **Find the page table definition and search what fields each entry contain? What basic functions are used to handle virtual memory?**
+- **Find the page table definition and search what fields each entry contain? **
 
   Page table is defined in `servers/vm/pt.h`:
 
@@ -30,6 +30,8 @@
   	u32_t pt_virtop;
   } pt_t;
   ```
+
+- **What basic functions are used to handle virtual memory?**
 
   To see the functions used to handle VM, we can check the main function of VM. Some basic functions are listed below:
 
@@ -59,7 +61,13 @@
 
 - **Find all the places where the `vm` used inside the kernel, Why does it appear in so many different places?**
 
-  
+  `find /usr/src -name "*.c" | xargs grep -l "vm" > usage`
+
+  ![image-20211124221821792](C:\Users\yexiaosu\AppData\Roaming\Typora\typora-user-images\image-20211124221821792.png)
+
+  The file contains 299 lines, indicating 299 files using virtual memory. 
+
+  Basically, when RAM is not enough, virtual memory will be used. Also, in MINIX3, process manager is split into  process management and memory management. So functions like `fork()` and `exit()` are implemented in VM, leading to so many usages of VM.
 
 - **How is memory allocated within the kernel? Why are not `malloc` and `calloc` used?**
 
@@ -67,9 +75,11 @@
 
   `malloc()` and `calloc()` are defined in user-space, so they cannot be used in kernel space (kernel can only use functions defined in kernel space). 
 
-- **While allocating memory, how does the functions in kernel space switch back and fro between user and kernel spaces? How is that boundary crossed? How good or bad it is to put `vm` in userspace?**
+- **While allocating memory, how does the functions in kernel space switch back and forth between user and kernel spaces? How is that boundary crossed? How good or bad it is to put `vm` in userspace?**
 
-  
+  When `malloc()` is called in user space, it will see if there's a piece of unused memory that satisfy the allocation requirements. If not, it will call the kernel function `mmap()` to ask for some memory. Kernel will then allocates memory and allow the userspace process to map it into its address space with `mmap()`. User space process will then use what returned from `mmap()` to access that memory.
+
+  I think it's a bad idea. Since the memory management needs to be done in kernel space, regrading to technique reasons and  safety reasons, if virtual memory is moved to user space, this means that the boundary between kernel space and user space will be crossed frequently, which is not a good idea.
 
 - **How are pagefaults handled?** [[1]](https://elixir.ortiz.sh/minix/v3.2.1/source/servers/vm/main.c#L74) [[2]](https://elixir.ortiz.sh/minix/v3.2.1/source/servers/vm/pagefaults.c#L51) [[3]](https://elixir.ortiz.sh/minix/v3.2.1/source/kernel/system/do_vmctl.c#L19)
 
@@ -143,8 +153,6 @@
     reboot
     ```
 
-    
-
 - **Use the top command to keep track of your used memory and cache, then run `time grep -r "mum" /usr/src`. Run the command again. What do you notice?**
 
   - First time: 32.41 real 0.21 user 13.03 sys
@@ -153,8 +161,6 @@
 
 - **Discuss the different behaviours of LRU and MRU as well as the consequences**
 
-  
-
   * `LRU` replaces the least-recently-used pages while `MRU` will replace the most-recently-used pages. In most situation, due to locality and spatial locality, `LRU` will be better. But under the following situation, I think `MRU` will be better:
-    * In video website, after the user have finished one video, it is less likely for them to see it again in a short time. Then `MRU` will be better. [[4]](https://stackoverflow.com/questions/5088128/why-does-cache-use-most-recently-used-mru-algorithm-as-evict-policy)
+  * In video website, after the user have finished one video, it is less likely for them to see it again in a short time. Then `MRU` will be better. [[4]](https://stackoverflow.com/questions/5088128/why-does-cache-use-most-recently-used-mru-algorithm-as-evict-policy)
 
