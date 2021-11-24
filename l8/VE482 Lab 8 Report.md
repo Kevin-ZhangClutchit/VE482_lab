@@ -156,4 +156,5 @@
   
 
   * `LRU` replaces the least-recently-used pages while `MRU` will replace the most-recently-used pages. In most situation, due to locality and spatial locality, `LRU` will be better. But under the following situation, I think `MRU` will be better:
-    * In video website, after the user have finished one video, it is less likely for them to see it again in a short time. Then `MRU` will be better. [[4]](
+    * In video website, after the user have finished one video, it is less likely for them to see it again in a short time. Then `MRU` will be better. [[4]](https://stackoverflow.com/questions/5088128/why-does-cache-use-most-recently-used-mru-algorithm-as-evict-policy)
+
