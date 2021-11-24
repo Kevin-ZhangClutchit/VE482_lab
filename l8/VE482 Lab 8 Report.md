@@ -1,5 +1,9 @@
 # VE482 Lab 8 Report
 
+Lan Wang  519370910084
+
+Kaiwen Zhang  519370910188
+
 ## 2 Memory in Minix 3
 
 ### 2.1 Memory management at kernel level
@@ -326,8 +330,6 @@ struct buf *lmfs_get_block(
   return(bp);			/* return the newly acquired block */
 }
 ```
-
-
 
 
   * recompile the kernel
