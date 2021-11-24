@@ -131,6 +131,29 @@
 
 - **Adjust the implementation of LRU into MRU and recompile the kernel.**
 
+  * Replace almost all the `oldest` with `youngest` in `free_yielded`
+
+  * In `lmfs_get_block`, replace `front` with `rear`
+
+  * recompile the kernel
+
+    ```shell
+    cd /usr/src
+    make build
+    reboot
+    ```
+
+    
+
 - **Use the top command to keep track of your used memory and cache, then run `time grep -r "mum" /usr/src`. Run the command again. What do you notice?**
 
+  - First time: 32.86 real 0.55 user 11.71 sys
+  - Second time: 32.73 real 0.48 user 11.61 sys
+  - Notice: The First time search is very very very slow compared to the `LRU` implementation. In the Second time, the running speed almost speed up nothing. As the most recently used page are replaced, doing repeated tasks won't increase.
+
 - **Discuss the different behaviours of LRU and MRU as well as the consequences**
+
+  
+
+  * `LRU` replaces the least-recently-used pages while `MRU` will replace the most-recently-used pages. In most situation, due to locality and spatial locality, `LRU` will be better. But under the following situation, I think `MRU` will be better:
+    * In video website, after the user have finished one video, it is less likely for them to see it again in a short time. Then `MRU` will be better. [[4]](
