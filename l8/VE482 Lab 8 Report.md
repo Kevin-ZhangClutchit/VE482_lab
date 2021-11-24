@@ -147,9 +147,9 @@
 
 - **Use the top command to keep track of your used memory and cache, then run `time grep -r "mum" /usr/src`. Run the command again. What do you notice?**
 
-  - First time: 32.86 real 0.55 user 11.71 sys
-  - Second time: 32.73 real 0.48 user 11.61 sys
-  - Notice: The First time search is very very very slow compared to the `LRU` implementation. In the Second time, the running speed almost speed up nothing. As the most recently used page are replaced, doing repeated tasks won't increase.
+  - First time: 32.41 real 0.21 user 13.03 sys
+  - Second time: 29.56 real 0.58 user 11.76 sys
+  - Notice: The First time search is very very very slow compared to the `LRU` implementation. In the Second time, the running speed speed up to a very limited sense due to the property of `MRU` will replace the most recently updated page. As the most recently used page are replaced, doing repeated tasks won't increase.
 
 - **Discuss the different behaviours of LRU and MRU as well as the consequences**
 
