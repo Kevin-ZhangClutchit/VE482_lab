@@ -107,6 +107,24 @@ static void __exit dice_exit(void) {
     //TODO: release all resources
     // Hint: Pay attention to the order!
     // Hint: device_destroy, cdev_del, class_destroy, kfree, unregister_chrdev_region
+    int i;
+    dev_t dev;
+    dev = MKDEV(dice_major,0);
+
+    printk("%s: Exit Process ...",dice_name);
+    printk("%s: Delete devices",dice_name);
+    for (i = 0; i < dice_devs; ++i) {
+        cdev_del(&(dice_devices[i].dice_cdev));
+    }
+
+    printk("%s: Free allocating memory ...",dice_name);
+    kfree(dice_devices);
+
+    printk("%s: Unregister the device ...",dice_name);
+
+    unregister_chrdev_region(dev,dice_devs);
+    printk("%s: Exit succeeds!",dice_name);
+    printk("Gubbai! Kimi no unmei no hito was not me!\n");
 }
 
 static int dice_open(struct inode *inode, struct file *filp) {
