@@ -12,6 +12,7 @@
 #define REGULAR 1
 #define BACKGAMMON 2
 #define GENERIC 3
+
 struct dice_dev{
     int num;               /* number of dice in this device */
     int dice_type;	       /* type of dice game:  regular; backgammon; generic */

@@ -1,8 +1,19 @@
 //
 // Created by citrate on 11/23/21.
 //
-
+#include <linux/kernel.h>
+#include <linux/errno.h>
+#include <linux/cdev.h>
+#include <linux/init.h>
 #include <linux/module.h>
+#include <linux/fs.h>
+#include <linux/uaccess.h>
+#include <linux/kdev_t.h>
+#include <linux/export.h>
+#include <linux/time64.h>
+#include <linux/timekeeping.h>
+#include <linux/random.h>
+#include <linux/slab.h>
 #include <linux/printk.h>
 //TODO: Add necessary header files
 #include "dice.h"
@@ -96,9 +107,11 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
     //TODO: Generate dice patterns, generate random number
     // Attention: handle count and offp carefully
     // Hint: copy_to_user
+    return 0;
 }
 static ssize_t dice_write(struct file *filp, const char __user *buff, size_t count, loff_t *offp) {
     //TODO: Read in number of dice
     // Attention: handle count and offp carefully
     // Hint: copy_from_user
+    return 0;
 }
