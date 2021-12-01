@@ -48,7 +48,8 @@ static struct file_operations fops = {
 
 static int __init dice_init(void) {
     printk("Grandpa, this is for you! Initialize process triggering...\n");
-    dev_t dev= MKDEV(dice_major,0);//initialize the driver
+    dev_t dev;
+    dev = MKDEV(dice_major,0);//initialize the driver
     //TODO: Find Major number dynamically
     // Hint: alloc_chrdev_region
     if (alloc_chrdev_region(&dev,0,dice_devs,dice_name)<0){
@@ -62,7 +63,8 @@ static int __init dice_init(void) {
 
     //TODO: create a class, loop through registering cdev and creating device
     // Hint: class_create, cdev_init, cdev_add, device_create
-    for (int i = 0; i < dice_devs; ++i) {
+    int i;
+    for (i = 0; i < dice_devs; ++i) {
         //TODO: Check whether it should be fixed to DICE_DEVS
         dev_t dev_add=MKDEV(dice_major,i);
         struct cdev* major_dev=&(dice_devices[i].dice_cdev);
@@ -82,7 +84,7 @@ static int __init dice_init(void) {
     dice_devices[0].num=dice_num;
     dice_devices[1].num=dice_num;
     dice_devices[2].num=dice_num;
-    printk(KERN_NOTICE "%s: Initialize succeed!",dice_name)
+    printk(KERN_NOTICE "%s: Initialize succeed!",dice_name);
     return 0;
 }
 
@@ -95,6 +97,7 @@ static void __exit dice_exit(void) {
 static int dice_open(struct inode *inode, struct file *filp) {
     //TODO: Find which dice is opened
     // Hint: container_of, filp->private_data
+    return 0;
 }
 
 static int dice_release(struct inode *inode, struct file *filp) {
