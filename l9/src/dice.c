@@ -14,6 +14,8 @@ int gen_sides = GEN_SIDES;     /* Initial number of sides of `arbitrary` dice ga
 struct dice_dev *dice_devices; /* An array of dice device */
 struct class *dice_class;      /* Used for class */
 
+static const char dice_name[]="GrandpaDice";
+
 static int __init dice_init(void);
 static void __exit dice_exit(void);
 static int dice_open(struct inode *inode, struct file *filp);
@@ -35,14 +37,41 @@ static struct file_operations fops = {
 
 static int __init dice_init(void) {
     printk("Grandpa, this is for you! Initialize process triggering...\n");
+    dev_t dev= MKDEV(dice_major,0);//initialize the driver
     //TODO: Find Major number dynamically
     // Hint: alloc_chrdev_region
-
+    if (alloc_chrdev_region(&dev,0,dice_devs,dice_name)<0){
+        printk(KERN_WARNING "%s: fail to dynamically find major number for register",dice_name);
+        return -1;
+    }else{
+        dice_major=MAJOR(dev);
+    }
     //TODO: Allocate memory for dices
+
 
     //TODO: create a class, loop through registering cdev and creating device
     // Hint: class_create, cdev_init, cdev_add, device_create
-
+    for (int i = 0; i < dice_devs; ++i) {
+        //TODO: Check whether it should be fixed to DICE_DEVS
+        dev_t dev_add=MKDEV(dice_major,i);
+        struct cdev* major_dev=&(dice_devices[i].dice_cdev);
+        cdev_init(major_dev,&fops);
+        (major_dev)->owner=THIS_MODULE;
+        (major_dev)->ops=&fops;
+        if(cdev_add(major_dev,dev_add,1)<0){
+            printk(KERN_WARNING "%s: fail to allocate memory for three dices",dice_name);
+            return -2;
+        }else{
+            continue;
+        }
+    }
+    dice_devices[0].dice_type=REGULAR;
+    dice_devices[1].dice_type=BACKGAMMON;
+    dice_devices[2].dice_type=GENERIC;
+    dice_devices[0].num=dice_num;
+    dice_devices[1].num=dice_num;
+    dice_devices[2].num=dice_num;
+    printk(KERN_NOTICE "%s: Initialize succeed!",dice_name)
     return 0;
 }
 

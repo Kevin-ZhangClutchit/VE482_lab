@@ -9,6 +9,9 @@
 #define DICE_NUM 2   /* Initial number of dice in a device */
 #define GEN_SIDES 20 /* default number of sides of `arbitrary` dice game */
 
+#define REGULAR 1
+#define BACKGAMMON 2
+#define GENERIC 3
 struct dice_dev{
     int num;               /* number of dice in this device */
     int dice_type;	       /* type of dice game:  regular; backgammon; generic */
