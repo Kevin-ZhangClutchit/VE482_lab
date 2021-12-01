@@ -38,6 +38,7 @@ MODULE_LICENSE("GPL");
 module_init(dice_init);
 module_exit(dice_exit);
 //TODO: Make gen_sides a module parameter
+module_param(gen_sides, int, 0);
 
 static struct file_operations fops = {
         .read = dice_read,
@@ -130,6 +131,10 @@ static void __exit dice_exit(void) {
 static int dice_open(struct inode *inode, struct file *filp) {
     //TODO: Find which dice is opened
     // Hint: container_of, filp->private_data
+    unsigned int minor_num = MINOR(inode->i_rdev);
+    printk(KERN_NOTICE "Dice: opening device with minor %d\n",minor_num);
+    filp->private_data = &dice_devices[minor_num];
+    printk("number of dice: %d, type of dice game: %d\n", ((struct dice_dev *)filp->private_data)->num, ((struct dice_dev *)filp->private_data)->dice_type);
     return 0;
 }
 
@@ -143,7 +148,94 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
     //TODO: Generate dice patterns, generate random number
     // Attention: handle count and offp carefully
     // Hint: copy_to_user
-    return 0;
+    struct dice_dev *dev = (struct dice_dev *)filp->private_data;
+    int dice_type = dev->dice_type;
+    int strcount = 0;
+#define MAX_DICE_STR 10240
+    char *str = kmalloc(MAX_DICE_STR * sizeof(char), GFP_KERNEL);
+//    char str[MAX_DICE_STR];
+
+    unsigned int rd[100]; // TODO: dynamically adjust the size
+    int i;
+    int err = 0;
+    dice_num = dev->num;
+
+    printk(KERN_NOTICE "Dice: outputing data\n");
+
+    if (dice_type == REGULAR){
+        // regular
+        static const char DICE_REG_PATTERN[3][6][12] = {
+                {"|     |  ","|     |  ","|  o  |  ","| o o |  ","| o o |  ","| o o |  "},
+                {"|  o  |  ","| o o |  ","|     |  ","|     |  ","|  o  |  ","| o o |  "},
+                {"|     |  ","|     |  ","| o o |  ","| o o |  ","| o o |  ","| o o |  "}
+        };
+        printk(KERN_NOTICE "Dice: outputing regular dice | ");
+        for(i = 0; i < dice_num; i++){
+            get_random_bytes(&rd[i], sizeof(unsigned int));
+            rd[i] = rd[i] % 6; // 0~5
+            printk("%u ",rd[i]);
+        }
+        printk("\n");
+
+        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"-------  ");
+        err += snprintf(str+err,MAX_DICE_STR,"\n");
+        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"%s",DICE_REG_PATTERN[0][rd[i]]);
+        err += snprintf(str+err,MAX_DICE_STR,"\n");
+        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"%s",DICE_REG_PATTERN[1][rd[i]]);
+        err += snprintf(str+err,MAX_DICE_STR,"\n");
+        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"%s",DICE_REG_PATTERN[2][rd[i]]);
+        err += snprintf(str+err,MAX_DICE_STR,"\n");
+        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"-------  ");
+        err += snprintf(str+err,MAX_DICE_STR,"\n");
+    } else if (dice_type == BACKGAMMON) {
+        // backgammon
+        static const char DICE_BACKGAMMON[6][4] = {
+                "2","4","8","16","32","64"
+        };
+        printk(KERN_NOTICE "Dice: outputing backgammon dice | ");
+        for(i=0;i<dice_num;i++){
+            get_random_bytes(&rd[i], sizeof(unsigned int));
+            rd[i] = rd[i] % 6; // 0~5
+            printk("%u ",rd[i]);
+        }
+        printk("\n");
+
+        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"%s ",DICE_BACKGAMMON[rd[i]]);
+        err += snprintf(str+err,MAX_DICE_STR,"\n");
+    } else if (dice_type == GENERIC) {
+        // arbitrary number of sides
+        printk(KERN_NOTICE "Dice: outputing generic dice | ");
+        for(i=0;i<dice_num;i++){
+            get_random_bytes(&rd[i], sizeof(unsigned int));
+            rd[i] = rd[i] % gen_sides; // 0~gen_sides-1
+            printk("%u ",rd[i]);
+        }
+        printk("\n");
+
+        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"%d ",rd[i]);
+        err += snprintf(str+err,MAX_DICE_STR,"\n");
+    }
+
+    /* examing output to user space */
+    if (err<0){
+        printk(KERN_NOTICE "Dice: error in snprintf\n");
+    }
+    strcount = err;
+    if ( *offp >= strcount ) {
+        printk(KERN_NOTICE "Dice: printer reaches ending, aborting\n");
+        return 0;
+    }
+    if ( *offp + count > strcount ){
+        count = strcount - *offp;
+    }
+    if ( copy_to_user(buff, str+*offp, count) != 0 ){
+        printk(KERN_NOTICE "Dice: copy_to_user error, aborting\n");
+        return -EFAULT;
+    }
+    *offp += count;
+    kfree(str);
+
+    return count;
 }
 static ssize_t dice_write(struct file *filp, const char __user *buff, size_t count, loff_t *offp) {
     //TODO: Read in number of dice
