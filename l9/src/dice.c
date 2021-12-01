@@ -34,6 +34,7 @@ static struct file_operations fops = {
 };
 
 static int __init dice_init(void) {
+    printk("Grandpa, this is for you! Initialize process triggering...\n");
     //TODO: Find Major number dynamically
     // Hint: alloc_chrdev_region
 
