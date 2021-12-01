@@ -47,8 +47,12 @@ static struct file_operations fops = {
 };
 
 static int __init dice_init(void) {
-    printk("Grandpa, this is for you! Initialize process triggering...\n");
     dev_t dev;
+    int i;
+
+    
+    printk("Grandpa, this is for you! Initialize process triggering...\n");
+
     dev = MKDEV(dice_major,0);//initialize the driver
     //TODO: Find Major number dynamically
     // Hint: alloc_chrdev_region
@@ -63,7 +67,7 @@ static int __init dice_init(void) {
 
     //TODO: create a class, loop through registering cdev and creating device
     // Hint: class_create, cdev_init, cdev_add, device_create
-    int i;
+
     for (i = 0; i < dice_devs; ++i) {
         //TODO: Check whether it should be fixed to DICE_DEVS
         dev_t dev_add=MKDEV(dice_major,i);
