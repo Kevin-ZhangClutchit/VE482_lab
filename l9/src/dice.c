@@ -79,6 +79,10 @@ static int __init dice_init(void) {
     // Hint: class_create, cdev_init, cdev_add, device_create
     printk("%s: Create class ...",dice_name);
     dice_class=class_create(THIS_MODULE,"dice_class");
+    if (dice_class==NULL){
+        printk(KERN_WARNING "%s: fail to create class for devices",dice_name);
+        return -4;
+    }
     printk("%s: Create devices ...",dice_name);
     for (i = 0; i < dice_devs; ++i) {
         //TODO: Check whether it should be fixed to DICE_DEVS
