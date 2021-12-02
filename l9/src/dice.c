@@ -168,34 +168,34 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
 
     printk(KERN_NOTICE "Dice: outputing data\n");
 
-    if (*offp == 0){
+    if (*offp == 0){ // without this, random number will be generated multiple times
     if (dice_type == REGULAR){
         // regular
         static const char DICE_PATTERN[3][6][10] = {
-                {"|     |  ","|     |  ","|  o  |  ","| o o |  ","| o o |  ","| o o |  "},
-                {"|  o  |  ","| o o |  ","|     |  ","|     |  ","|  o  |  ","| o o |  "},
-                {"|     |  ","|     |  ","| o o |  ","| o o |  ","| o o |  ","| o o |  "}
+                {"|     |","|     |","|  o  |","| o o |","| o o |","| o o |"},
+                {"|  o  |","| o o |","|     |","|     |","|  o  |","| o o |"},
+                {"|     |","|     |","| o o |","| o o |","| o o |","| o o |"}
         };
-        printk(KERN_NOTICE "Dice: outputing regular dice | ");
+        printk(KERN_NOTICE "Dice: regular dice");
         for(i = 0; i < dice_num; ++i){
             get_random_bytes(&rd[i], sizeof(unsigned int));
             rd[i] = rd[i] % 6; // 0~5
-            printk("%u ",rd[i]);
+            printk("%u\n",rd[i]);
         }
         printk("Start print!\n");
-        printk("Start 1st!\n");
+//        printk("Start 1st!\n");
         for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"-------  ");
         offset += snprintf(str+offset,MAX_STR,"\n");
-        printk("Start 2nd!\n");
-        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%s",DICE_PATTERN[0][rd[i]]);
+//        printk("Start 2nd!\n");
+        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%s  ",DICE_PATTERN[0][rd[i]]);
         offset += snprintf(str+offset,MAX_STR,"\n");
-        printk("Start 3rd!\n");
-        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%s",DICE_PATTERN[1][rd[i]]);
+//        printk("Start 3rd!\n");
+        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%s  ",DICE_PATTERN[1][rd[i]]);
         offset += snprintf(str+offset,MAX_STR,"\n");
-        printk("Start 4th!\n");
-        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%s",DICE_PATTERN[2][rd[i]]);
+//        printk("Start 4th!\n");
+        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%s  ",DICE_PATTERN[2][rd[i]]);
         offset += snprintf(str+offset,MAX_STR,"\n");
-        printk("Start 5th!\n");
+//        printk("Start 5th!\n");
         for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"-------  ");
         offset += snprintf(str+offset,MAX_STR,"\n");
     } else if (dice_type == BACKGAMMON) {
@@ -203,27 +203,25 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
         static const char DICE_BACKGAMMON[6][4] = {
                 "2","4","8","16","32","64"
         };
-        printk(KERN_NOTICE "Dice: outputing backgammon dice | ");
+        printk(KERN_NOTICE "Dice: backgammon~");
         for(i=0;i<dice_num;i++){
             get_random_bytes(&rd[i], sizeof(unsigned int));
             rd[i] = rd[i] % 6; // 0~5
-            printk("%u ",rd[i]);
+            printk("%u\n",rd[i]);
         }
-        printk("\n");
 
-        for(i=0;i<dice_num;i++) offset += snprintf(str+offset,MAX_STR,"%s ",DICE_BACKGAMMON[rd[i]]);
+        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%s ",DICE_BACKGAMMON[rd[i]]);
         offset += snprintf(str+offset,MAX_STR,"\n");
     } else if (dice_type == GENERIC) {
         // arbitrary number of sides
-        printk(KERN_NOTICE "Dice: outputing generic dice | ");
+        printk(KERN_NOTICE "Dice: generic, from 1 to %d\n", gen_sides);
         for(i=0;i<dice_num;i++){
             get_random_bytes(&rd[i], sizeof(unsigned int));
             rd[i] = rd[i] % gen_sides; // 0~gen_sides-1
-            printk("%u ",rd[i]);
+            printk("%u\n",rd[i]);
         }
-        printk("\n");
 
-        for(i=0;i<dice_num;i++) offset += snprintf(str+offset,MAX_STR,"%d ",rd[i]);
+        for(i=0;i<dice_num;i++) offset += snprintf(str+offset,MAX_STR,"%u ",rd[i]+1);
         offset += snprintf(str+offset,MAX_STR,"\n");
     }
     }
