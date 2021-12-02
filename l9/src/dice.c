@@ -131,9 +131,8 @@ static void __exit dice_exit(void) {
 static int dice_open(struct inode *inode, struct file *filp) {
     //TODO: Find which dice is opened
     // Hint: container_of, filp->private_data
-    unsigned int minor_num = MINOR(inode->i_rdev);
-    printk(KERN_NOTICE "Dice: opening device with minor %d\n",minor_num);
-    filp->private_data = &dice_devices[minor_num];
+    struct dice_dev *dev = container_of(inode->i_cdev, struct dice_dev, dice_cdev);
+    filp->private_data = dev;
     printk("number of dice: %d, type of dice game: %d\n", ((struct dice_dev *)filp->private_data)->num, ((struct dice_dev *)filp->private_data)->dice_type);
     return 0;
 }
@@ -141,6 +140,7 @@ static int dice_open(struct inode *inode, struct file *filp) {
 static int dice_release(struct inode *inode, struct file *filp) {
     //Do nothing here
     //If you allocate any resource in dice_open(), then you must release them here
+    printk("Release dice!\n");
     return 0;
 }
 
@@ -241,5 +241,33 @@ static ssize_t dice_write(struct file *filp, const char __user *buff, size_t cou
     //TODO: Read in number of dice
     // Attention: handle count and offp carefully
     // Hint: copy_from_user
-    return 0;
+    struct dice_dev *dev = (struct dice_dev *)filp->private_data;
+#define MAX_DICE_IN 10
+    char input_str[MAX_DICE_IN];
+    long int tmp_num = 0;
+// retval = __get_user(dice_num, buff);
+// if(retval != 0){ // error
+//     printk(KERN_NOTICE "Dice: error on getting user's input!\n");
+// }
+// if(dice_num == '\n') return 1;
+// retval = 1; // return number of bytes written
+    if (count > MAX_DICE_IN){
+        printk(KERN_NOTICE "Dice: too much input");
+        return -EINVAL;
+    }
+    if ( copy_from_user(input_str, buff, count) != 0 ){
+        printk(KERN_NOTICE "Dice: copy_from_user error!\n");
+        return -EINVAL;
+    }
+    input_str[count-1] = '\0';
+    if (kstrtol(input_str, 10, &tmp_num) != 0){
+        printk(KERN_NOTICE "Dice: kstrtol error handling <%s> with count %d!\n", input_str, (int)count);
+    }
+    dice_num = (int) tmp_num;
+    // dice_num = dice_num - '0';
+    printk(KERN_NOTICE "Dice: new dice number assigned: %d\n",dice_num);
+    // printk("return: %d ", retval);
+    dev->num = dice_num;
+    // return retval;
+    return count;
 }
