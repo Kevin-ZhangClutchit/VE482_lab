@@ -18,25 +18,10 @@ Kaiwen Zhang  519370910188
 
 - **Knowing the major number and minor numbers of a device, how to add a character device to `/dev`?[3]**
 
-  ```c
-  //First
-  void cdev_init (	struct cdev * cdev,
-   	const struct file_operations * fops);
-  //where
-  //cdev: the structure to initialize
-  //fops: the file_operations for this device
+  * First, we need to use `kmalloc` to allocate memory for modules.
+  * Then we use `class_create` to create a class for the module.
+  * Next, with in a for loop, we loop through the registered cdev, use `cdev_init` to initialize it and then use `cdev_add` to add it to the `\dev`. Besides, we use `device_create` to store its information within the `class` we create.
   
-  int cdev_add (	struct cdev * p,
-   	dev_t dev,
-   	unsigned count);
-  // where
-  // p: the cdev structure for the device
-  // dev: the first device number for which this device is responsible
-  // count: the number of consecutive minor numbers corresponding to this device
-  ```
-
-  
-
 - **Where are the following terms located in linux source code?**
   **– `module_init`**: [**include/linux/module.h**](https://elixir.bootlin.com/linux/latest/source/include/linux/module.h#L88)
   **– `module_exit`**: [**include/linux/module.h**](https://elixir.bootlin.com/linux/latest/source/include/linux/module.h#L100)
