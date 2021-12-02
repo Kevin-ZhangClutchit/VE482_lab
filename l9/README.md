@@ -64,6 +64,7 @@ You can just type `sudo cat /dev/dice_dev<0-2>` to play the dice for one time.
 To specify the number of dices, you should first enter the `root` mode and then:
 
 ```shell
+// <number> should be less than 100
 echo <number> > /proc/dice_dev<0-2>
 ```
 
