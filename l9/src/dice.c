@@ -199,9 +199,11 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
         offset += snprintf(str+offset,MAX_STR,"\n");
     } else if (dice_type == BACKGAMMON) {
         // backgammon
-        static const char DICE_BACKGAMMON[6][4] = { "2","4","8","16","32","64" };
+        static const char DICE_BACKGAMMON[6][4] = {
+                "2","4","8","16","32","64"
+        };
         printk(KERN_NOTICE "Dice: backgammon~");
-        for(i = 0; i < dice_num; i++){
+        for(i=0;i<dice_num;i++){
             get_random_bytes(&rd[i], sizeof(unsigned int));
             rd[i] = rd[i] % 6; // 0~5
             printk("%u\n",rd[i]);
@@ -212,19 +214,19 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
     } else if (dice_type == GENERIC) {
         // arbitrary number of sides
         printk(KERN_NOTICE "Dice: generic, from 1 to %d\n", gen_sides);
-        for(i = 0; i < dice_num; i++){
+        for(i=0;i<dice_num;i++){
             get_random_bytes(&rd[i], sizeof(unsigned int));
             rd[i] = rd[i] % gen_sides; // 0~gen_sides-1
             printk("%u\n",rd[i]);
         }
 
-        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%u ",rd[i]+1);
+        for(i=0;i<dice_num;i++) offset += snprintf(str+offset,MAX_STR,"%u ",rd[i]+1);
         offset += snprintf(str+offset,MAX_STR,"\n");
     }
     }
 
     /* examing output to user space */
-    if (offset<0){
+    if ( offset<0 ){
         printk(KERN_NOTICE "Dice: error in snprintf\n");
     }
     str_len = offset;
@@ -253,27 +255,26 @@ static ssize_t dice_write(struct file *filp, const char __user *buff, size_t cou
 #define MAX_DICE_IN 10
     char input_str[MAX_DICE_IN];
     long int tmp_num = 0;
-// retval = __get_user(dice_num, buff);
-// if(retval != 0){ // error
-//     printk(KERN_NOTICE "Dice: error on getting user's input!\n");
-// }
-// if(dice_num == '\n') return 1;
-// retval = 1; // return number of bytes written
     if (count > MAX_DICE_IN){
-        printk(KERN_NOTICE "Dice: too much input");
-        return -EINVAL;
+        printk(KERN_ERR "Dice: too much dices. Less than 100 dices are definitely enough for you to play a game!");
+        return -1;
     }
     if ( copy_from_user(input_str, buff, count) != 0 ){
-        printk(KERN_NOTICE "Dice: copy_from_user error!\n");
-        return -EINVAL;
+        printk(KERN_ERR "Dice: copy_from_user() error!\n");
+        return -1;
     }
+//    printk("%ld\n",count);
     input_str[count-1] = '\0';
     if (kstrtol(input_str, 10, &tmp_num) != 0){
         printk(KERN_NOTICE "Dice: kstrtol error handling <%s> with count %d!\n", input_str, (int)count);
     }
     dice_num = (int) tmp_num;
+    if (dice_num > 100){
+        printk(KERN_ERR "Dice: too much dices. Less than 100 dices are definitely enough for you to play a game!");
+        return -1;
+    }
     // dice_num = dice_num - '0';
-    printk(KERN_NOTICE "Dice: new dice number assigned: %d\n",dice_num);
+    printk(KERN_NOTICE "Dice: Now %d dices are applied\n",dice_num);
     // printk("return: %d ", retval);
     dev->num = dice_num;
     // return retval;
