@@ -59,7 +59,13 @@ Now , under folder `/dev`, you can see three new devices:
 * `dice_dev1`: the backgammon dice
 * `dice_dev2`: a dice whose range is specified by the `input` during the `insmod` (with default 20).
 
-You can just type `sudo cat /dev/dice_dev<number>` to play the dice for one time.
+You can just type `sudo cat /dev/dice_dev<0-2>` to play the dice for one time.
+
+To specify the number of dices, you should first enter the `root` mode and then:
+
+```shell
+echo <number> > /proc/dice_dev<0-2>
+```
 
 ### Remove
 
