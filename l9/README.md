@@ -35,6 +35,8 @@ make[1]: Leaving directory '/usr/src/linux-headers-5.11.0-41-generic'
 
 ```shell
 sudo insmod dicedevice.ko
+# To modify the range of generic dice (default 20), use:
+sudo insmod dicedevice.ko gen_sides=<number>
 ```
 
 If succeed, following information will be printed in the `dmesg` result.
@@ -64,7 +66,7 @@ You can just type `sudo cat /dev/dice_dev<0-2>` to play the dice for one time.
 To specify the number of dices, you should first enter the `root` mode and then:
 
 ```shell
-// <number> should be less than 100
+# <number> should be less than 100
 echo <number> > /proc/dice_dev<0-2>
 ```
 

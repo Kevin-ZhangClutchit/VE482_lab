@@ -169,7 +169,7 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
     int offset = 0;
     dice_num = dev->num;
 
-    printk(KERN_NOTICE "Dice: outputing data\n");
+    printk(KERN_NOTICE "dicedevice: outputing data\n");
 
     if (*offp == 0){ // without this, random number will be generated multiple times
     if (dice_type == REGULAR){
@@ -206,8 +206,8 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
         static const char DICE_BACKGAMMON[6][4] = {
                 "2","4","8","16","32","64"
         };
-        printk(KERN_NOTICE "Dice: backgammon~");
-        for(i=0;i<dice_num;i++){
+        printk(KERN_NOTICE "dicedevice: backgammon~");
+        for(i = 0; i < dice_num; i++){
             get_random_bytes(&rd[i], sizeof(unsigned int));
             rd[i] = rd[i] % 6; // 0~5
             printk("%u\n",rd[i]);
@@ -217,32 +217,32 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
         offset += snprintf(str+offset,MAX_STR,"\n");
     } else if (dice_type == GENERIC) {
         // arbitrary number of sides
-        printk(KERN_NOTICE "Dice: generic, from 1 to %d\n", gen_sides);
-        for(i=0;i<dice_num;i++){
+        printk(KERN_NOTICE "dicedevice: generic, from 1 to %d\n", gen_sides);
+        for(i = 0; i < dice_num; i++){
             get_random_bytes(&rd[i], sizeof(unsigned int));
             rd[i] = rd[i] % gen_sides; // 0~gen_sides-1
             printk("%u\n",rd[i]);
         }
 
-        for(i=0;i<dice_num;i++) offset += snprintf(str+offset,MAX_STR,"%u ",rd[i]+1);
+        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%u ",rd[i]+1);
         offset += snprintf(str+offset,MAX_STR,"\n");
     }
     }
 
     /* examing output to user space */
     if ( offset<0 ){
-        printk(KERN_NOTICE "Dice: error in snprintf\n");
+        printk(KERN_NOTICE "dicedevice: error in snprintf\n");
     }
     str_len = offset;
     if ( *offp >= str_len ) {
-        printk(KERN_NOTICE "Dice: Already copied all info\n");
+        printk(KERN_NOTICE "dicedevice: Already copied all info\n");
         return 0;
     }
     if ( str_len - *offp < count ){ // the length of string to be copied is less than buffer length
         count = str_len - *offp;
     }
     if ( copy_to_user(buff, str+*offp, count) != 0 ){
-        printk(KERN_NOTICE "Dice: copy_to_user error, aborting\n");
+        printk(KERN_NOTICE "dicedevice: copy_to_user error, aborting\n");
         kfree(str);
         return -1;
     }
@@ -260,25 +260,25 @@ static ssize_t dice_write(struct file *filp, const char __user *buff, size_t cou
     char input_str[MAX_DICE_IN];
     long int tmp_num = 0;
     if (count > MAX_DICE_IN){
-        printk(KERN_ERR "Dice: too much dices. Less than 100 dices are definitely enough for you to play a game!");
+        printk(KERN_ERR "dicedevice: too much dices. Less than 100 dices are definitely enough for you to play a game!");
         return -1;
     }
     if ( copy_from_user(input_str, buff, count) != 0 ){
-        printk(KERN_ERR "Dice: copy_from_user() error!\n");
+        printk(KERN_ERR "dicedevice: copy_from_user() error!\n");
         return -1;
     }
 //    printk("%ld\n",count);
     input_str[count-1] = '\0';
     if (kstrtol(input_str, 10, &tmp_num) != 0){
-        printk(KERN_NOTICE "Dice: kstrtol error handling <%s> with count %d!\n", input_str, (int)count);
+        printk(KERN_NOTICE "dicedevice: kstrtol error handling <%s> with count %d!\n", input_str, (int)count);
     }
     dice_num = (int) tmp_num;
     if (dice_num > 100){
-        printk(KERN_ERR "Dice: too much dices. Less than 100 dices are definitely enough for you to play a game!");
+        printk(KERN_ERR "dicedevice: too much dices. Less than 100 dices are definitely enough for you to play a game!");
         return -1;
     }
     // dice_num = dice_num - '0';
-    printk(KERN_NOTICE "Dice: Now %d dices are applied\n",dice_num);
+    printk(KERN_NOTICE "dicedevice: Now %d dices are applied\n",dice_num);
     // printk("return: %d ", retval);
     dev->num = dice_num;
     // return retval;
