@@ -151,42 +151,48 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
     struct dice_dev *dev = (struct dice_dev *)filp->private_data;
     int dice_type = dev->dice_type;
     int strcount = 0;
-#define MAX_DICE_STR 10240
-    char *str = kmalloc(MAX_DICE_STR * sizeof(char), GFP_KERNEL);
+#define MAX_STR 15
+#define MAX_TOTAL_STR 10000
+    char *str = kmalloc(MAX_TOTAL_STR * sizeof(char), GFP_KERNEL);
 //    char str[MAX_DICE_STR];
 
     unsigned int rd[100]; // TODO: dynamically adjust the size
     int i;
-    int err = 0;
+    int offset = 0;
     dice_num = dev->num;
 
     printk(KERN_NOTICE "Dice: outputing data\n");
 
+    if (*offp == 0){
     if (dice_type == REGULAR){
         // regular
-        static const char DICE_REG_PATTERN[3][6][12] = {
+        static const char DICE_PATTERN[3][6][10] = {
                 {"|     |  ","|     |  ","|  o  |  ","| o o |  ","| o o |  ","| o o |  "},
                 {"|  o  |  ","| o o |  ","|     |  ","|     |  ","|  o  |  ","| o o |  "},
                 {"|     |  ","|     |  ","| o o |  ","| o o |  ","| o o |  ","| o o |  "}
         };
         printk(KERN_NOTICE "Dice: outputing regular dice | ");
-        for(i = 0; i < dice_num; i++){
+        for(i = 0; i < dice_num; ++i){
             get_random_bytes(&rd[i], sizeof(unsigned int));
             rd[i] = rd[i] % 6; // 0~5
             printk("%u ",rd[i]);
         }
-        printk("\n");
-
-        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"-------  ");
-        err += snprintf(str+err,MAX_DICE_STR,"\n");
-        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"%s",DICE_REG_PATTERN[0][rd[i]]);
-        err += snprintf(str+err,MAX_DICE_STR,"\n");
-        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"%s",DICE_REG_PATTERN[1][rd[i]]);
-        err += snprintf(str+err,MAX_DICE_STR,"\n");
-        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"%s",DICE_REG_PATTERN[2][rd[i]]);
-        err += snprintf(str+err,MAX_DICE_STR,"\n");
-        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"-------  ");
-        err += snprintf(str+err,MAX_DICE_STR,"\n");
+        printk("Start print!\n");
+        printk("Start 1st!\n");
+        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"-------  ");
+        offset += snprintf(str+offset,MAX_STR,"\n");
+        printk("Start 2nd!\n");
+        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%s",DICE_PATTERN[0][rd[i]]);
+        offset += snprintf(str+offset,MAX_STR,"\n");
+        printk("Start 3rd!\n");
+        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%s",DICE_PATTERN[1][rd[i]]);
+        offset += snprintf(str+offset,MAX_STR,"\n");
+        printk("Start 4th!\n");
+        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%s",DICE_PATTERN[2][rd[i]]);
+        offset += snprintf(str+offset,MAX_STR,"\n");
+        printk("Start 5th!\n");
+        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"-------  ");
+        offset += snprintf(str+offset,MAX_STR,"\n");
     } else if (dice_type == BACKGAMMON) {
         // backgammon
         static const char DICE_BACKGAMMON[6][4] = {
@@ -200,8 +206,8 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
         }
         printk("\n");
 
-        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"%s ",DICE_BACKGAMMON[rd[i]]);
-        err += snprintf(str+err,MAX_DICE_STR,"\n");
+        for(i=0;i<dice_num;i++) offset += snprintf(str+offset,MAX_STR,"%s ",DICE_BACKGAMMON[rd[i]]);
+        offset += snprintf(str+offset,MAX_STR,"\n");
     } else if (dice_type == GENERIC) {
         // arbitrary number of sides
         printk(KERN_NOTICE "Dice: outputing generic dice | ");
@@ -212,15 +218,16 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
         }
         printk("\n");
 
-        for(i=0;i<dice_num;i++) err += snprintf(str+err,MAX_DICE_STR,"%d ",rd[i]);
-        err += snprintf(str+err,MAX_DICE_STR,"\n");
+        for(i=0;i<dice_num;i++) offset += snprintf(str+offset,MAX_STR,"%d ",rd[i]);
+        offset += snprintf(str+offset,MAX_STR,"\n");
+    }
     }
 
     /* examing output to user space */
-    if (err<0){
+    if (offset<0){
         printk(KERN_NOTICE "Dice: error in snprintf\n");
     }
-    strcount = err;
+    strcount = offset;
     if ( *offp >= strcount ) {
         printk(KERN_NOTICE "Dice: printer reaches ending, aborting\n");
         return 0;
