@@ -15,6 +15,7 @@
 #include <linux/random.h>
 #include <linux/slab.h>
 #include <linux/printk.h>
+#include <linux/device.h>
 //TODO: Add necessary header files
 #include "dice.h"
 
@@ -58,7 +59,7 @@ static int __init dice_init(void) {
 
     //TODO: Find Major number dynamically
     // Hint: alloc_chrdev_region
-    printk("%s: Find Major number dynamically ....",dice_name);
+    printk("%s: Find major number dynamically ....",dice_name);
     if (alloc_chrdev_region(&dev,0,dice_devs,dice_name)<0){
         printk(KERN_WARNING "%s: fail to dynamically find major number for register",dice_name);
         return -1;
@@ -76,7 +77,9 @@ static int __init dice_init(void) {
     }
     //TODO: create a class, loop through registering cdev and creating device
     // Hint: class_create, cdev_init, cdev_add, device_create
-    printk("%s: Create Devices ....",dice_name);
+    printk("%s: Create class ...",dice_name);
+    dice_class=class_create(THIS_MODULE,"dice_class");
+    printk("%s: Create devices ...",dice_name);
     for (i = 0; i < dice_devs; ++i) {
         //TODO: Check whether it should be fixed to DICE_DEVS
         dev_t dev_add=MKDEV(dice_major,i);
@@ -87,9 +90,8 @@ static int __init dice_init(void) {
         if(cdev_add(major_dev,dev_add,1)<0){
             printk(KERN_WARNING "%s: fail to allocate memory for three dices",dice_name);
             return -2;
-        }else{
-            continue;
         }
+        device_create(dice_class, NULL, dev_add, NULL, "dice_dev%d",i);
     }
     printk("%s: After for loop ....",dice_name);
     dice_devices[0].dice_type=REGULAR;
@@ -113,11 +115,14 @@ static void __exit dice_exit(void) {
     dev = MKDEV(dice_major,0);
 
     printk("%s: Exit Process ...",dice_name);
-    printk("%s: Delete devices",dice_name);
+    printk("%s: Delete devices ...",dice_name);
     for (i = 0; i < dice_devs; ++i) {
+        device_destroy(dice_class,MKDEV(dice_major,i));
         cdev_del(&(dice_devices[i].dice_cdev));
     }
-
+    printk("%s: Delete class ...",dice_name);
+    class_destroy(dice_class);
+    dice_class=NULL;
     printk("%s: Free allocating memory ...",dice_name);
     kfree(dice_devices);
 
