@@ -155,11 +155,10 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
     // Hint: copy_to_user
     struct dice_dev *dev = (struct dice_dev *)filp->private_data;
     int dice_type = dev->dice_type;
-    int strcount = 0;
+    int str_len = 0;
 #define MAX_STR 15
 #define MAX_TOTAL_STR 10000
     char *str = kmalloc(MAX_TOTAL_STR * sizeof(char), GFP_KERNEL);
-//    char str[MAX_DICE_STR];
 
     unsigned int rd[100]; // TODO: dynamically adjust the size
     int i;
@@ -200,11 +199,9 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
         offset += snprintf(str+offset,MAX_STR,"\n");
     } else if (dice_type == BACKGAMMON) {
         // backgammon
-        static const char DICE_BACKGAMMON[6][4] = {
-                "2","4","8","16","32","64"
-        };
+        static const char DICE_BACKGAMMON[6][4] = { "2","4","8","16","32","64" };
         printk(KERN_NOTICE "Dice: backgammon~");
-        for(i=0;i<dice_num;i++){
+        for(i = 0; i < dice_num; i++){
             get_random_bytes(&rd[i], sizeof(unsigned int));
             rd[i] = rd[i] % 6; // 0~5
             printk("%u\n",rd[i]);
@@ -215,13 +212,13 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
     } else if (dice_type == GENERIC) {
         // arbitrary number of sides
         printk(KERN_NOTICE "Dice: generic, from 1 to %d\n", gen_sides);
-        for(i=0;i<dice_num;i++){
+        for(i = 0; i < dice_num; i++){
             get_random_bytes(&rd[i], sizeof(unsigned int));
             rd[i] = rd[i] % gen_sides; // 0~gen_sides-1
             printk("%u\n",rd[i]);
         }
 
-        for(i=0;i<dice_num;i++) offset += snprintf(str+offset,MAX_STR,"%u ",rd[i]+1);
+        for(i = 0; i < dice_num; i++) offset += snprintf(str+offset,MAX_STR,"%u ",rd[i]+1);
         offset += snprintf(str+offset,MAX_STR,"\n");
     }
     }
@@ -230,17 +227,18 @@ static ssize_t dice_read(struct file *filp, char __user *buff, size_t count, lof
     if (offset<0){
         printk(KERN_NOTICE "Dice: error in snprintf\n");
     }
-    strcount = offset;
-    if ( *offp >= strcount ) {
-        printk(KERN_NOTICE "Dice: printer reaches ending, aborting\n");
+    str_len = offset;
+    if ( *offp >= str_len ) {
+        printk(KERN_NOTICE "Dice: Already copied all info\n");
         return 0;
     }
-    if ( *offp + count > strcount ){
-        count = strcount - *offp;
+    if ( str_len - *offp < count ){ // the length of string to be copied is less than buffer length
+        count = str_len - *offp;
     }
     if ( copy_to_user(buff, str+*offp, count) != 0 ){
         printk(KERN_NOTICE "Dice: copy_to_user error, aborting\n");
-        return -EFAULT;
+        kfree(str);
+        return -1;
     }
     *offp += count;
     kfree(str);
