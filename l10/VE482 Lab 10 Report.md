@@ -8,19 +8,19 @@ Kaiwen Zhang  519370910188
 
 ### A clean Setup
 
-- **Where to copy the dice module for it to be officially known to the kernel?  ** 
+- **Where to copy the dice module for it to be officially known to the kernel?** 
 
   `/lib/modules/$(uname -r)/kernel/drivers/dice`
 
-- **What command to run in order to generate the `modules.dep` and `map` files?  **
+- **What command to run in order to generate the `modules.dep` and `map` files?**
 
   `depmod`
 
-- **How to ensure the dice module is loaded at boot time, and how to pass it options?  **
+- **How to ensure the dice module is loaded at boot time, and how to pass it options?**
 
   Create & Edit `/etc/modules-load.d/*.conf` & add `dicedevice gen_sides=` to pass parameters.
 
-- **How to create a new `friends` group and add grandpa and his friends to it?  **[1]
+- **How to create a new `friends` group and add grandpa and his friends to it?**[1]
 
   - Create a new `friends` group: `sudo groupadd friends`
   - Add grandpa: `sudo usermod -a -G friends grandpa`
@@ -35,36 +35,36 @@ Kaiwen Zhang  519370910188
 
 #### Hacking mum’s computer  
 
-- **How adjust the PATH, ensure its new version is loaded but then forgotten?  **
+- **How adjust the PATH, ensure its new version is loaded but then forgotten?**
 
   
 
-* **What is the exact behaviour of `su` when wrong password is input?  **
+* **What is the exact behaviour of `su` when wrong password is input?**
   
   
   
-* **When using the `read` command how to hide the user input?  **
+* **When using the `read` command how to hide the user input?**
   
   
   
-* **How to send an email from the command line?  **
+* **How to send an email from the command line?**
   
   
 #### Automatic setup    
 
-* **What is `systemd`, where are service files stored and how to write one?  **
+* **What is `systemd`, where are service files stored and how to write one?**
 
 
 
-* **How to get a `systemd` service to autostart?  **
+* **How to get a `systemd` service to autostart?**
 
 
 
-* **What is the difference between running `tmux` from the `systemd` service or from the `gp-2.10` daemon?  **
+* **What is the difference between running `tmux` from the `systemd` service or from the `gp-2.10` daemon?**
 
 
 
-* **What is `dbus` and how to listen to all the system events from the command line?  **
+* **What is `dbus` and how to listen to all the system events from the command line?**
 
 
 
@@ -73,11 +73,11 @@ Kaiwen Zhang  519370910188
 
 
 * **What is `tripwire`, what are some alternatives, and why should the configuration files also be
-  encrypted and their corresponding plaintext deleted?    **
+  encrypted and their corresponding plaintext deleted?**
 
 
 
-* **What is `cron` and how to use it in order to run tasks at a specific time?  **
+* **What is `cron` and how to use it in order to run tasks at a specific time?**
 
 
 
