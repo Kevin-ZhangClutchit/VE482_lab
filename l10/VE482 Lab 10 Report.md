@@ -77,7 +77,7 @@ Kaiwen Zhang  519370910188
 
   ![image-20211207011446274](./image-20211207011446274.png)
 
-  To write a service file, it should contain the following three sections: [[1]](https://www.shellhacks.com/systemd-service-file-example/)
+  To write a service file, it should contain the following three sections: [4]
 
   * `[Unit]`: describes the unit's basic information and dependencies
 
@@ -131,11 +131,29 @@ Kaiwen Zhang  519370910188
 
 * **What is `tripwire`, what are some alternatives, and why should the configuration files also be encrypted and their corresponding plaintext deleted?**
 
+  `tripwire` is used to detect threats, identify vulnerabilities and harden configurations in real time.
 
+  Some alternatives include OSSEC, Splunk, SolarWinds and so on. [5]
+
+  Configuration files should be encrypted because they may control some critical behaviours of processes, such as starting other processes as we talked above.
 
 * **What is `cron` and how to use it in order to run tasks at a specific time?**
 
+  The cron command-line utility, also known as cron job, is a job scheduler on Unix-like operating systems. 
 
+  To use it, we need to edit `crontab` file as following format:
+
+  ```
+  MIN(0-59) HOUR(0-23) DAY(1-31) MON(1-12) WEEKDAY(0-7, 0&7 are both Sunday) CMD
+  * * * * * <command>
+  ```
+
+  * divided by space
+  * operators: 
+    * `*` for all numbers in certain scale
+    * `a-b`: from `a` to `b`
+    * `a,b`: `a` and `b`
+    * `*/a`: execute once per `a`
 
   
 
@@ -149,3 +167,6 @@ Kaiwen Zhang  519370910188
 
 [3] [5 Ways To Send Email from Linux Command Line - TecAdmin](https://tecadmin.net/ways-to-send-email-from-linux-command-line/)
 
+[4] [ShellHacks: Command-Line Tips and Tricks](https://www.shellhacks.com/systemd-service-file-example/)
+
+[5] [5 Best Tripwire Alternatives](https://www.dnsstuff.com/tripwire-alternatives)
