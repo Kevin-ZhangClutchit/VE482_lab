@@ -225,8 +225,9 @@ sudo chmod u+s su
 
 #### Result
 
+![result terminal](./res_1.png)
 
-
+![result email](./res_2.png)
 
 ## Reference
 
