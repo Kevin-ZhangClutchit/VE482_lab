@@ -69,7 +69,7 @@ Kaiwen Zhang  519370910188
   
 #### Automatic setup    
 
-* **What is `systemd`, where are service files stored and how to write one?  **
+* **What is `systemd`, where are service files stored and how to write one?**
 
   `systemd` stands for system daemon, which provides a system and service manager that runs as PID 1 and starts the rest of the system. In other words, it starts first when booting. So, it can be used to load a software at boot time.
 
@@ -109,15 +109,15 @@ Kaiwen Zhang  519370910188
       | `RequiredBy`, `WantedBy` | The current service will be started when the listed services are started. |
       | `Also`                   | Specifies a list of units to be enabled or disabled along with this unit when a user runs `systemctl enable` or `systemctl disable`. |
 
-* **How to get a `systemd` service to autostart?  **
+* **How to get a `systemd` service to autostart?**
 
   `sudo systemctl enable <service>`
 
-* **What is the difference between running `tmux` from the `systemd` service or from the `gp-2.10` daemon?  **
+* **What is the difference between running `tmux` from the `systemd` service or from the `gp-2.10` daemon?**
 
   Running from the `systemd` service allows `tmux` to be started when booting.
 
-* **What is `dbus` and how to listen to all the system events from the command line?  **
+* **What is `dbus` and how to listen to all the system events from the command line?**
 
   `dbus` is a message bus system, providing a simple way for applications to talk to each other. It's basically an IPC way and allows a process to use the APIs of other processes.
 
@@ -129,11 +129,11 @@ Kaiwen Zhang  519370910188
 
   By `tmux new-session -d -s <session_name>`.
 
-* **What is `tripwire`, what are some alternatives, and why should the configuration files also be encrypted and their corresponding plaintext deleted?    **
+* **What is `tripwire`, what are some alternatives, and why should the configuration files also be encrypted and their corresponding plaintext deleted?**
 
 
 
-* **What is `cron` and how to use it in order to run tasks at a specific time?  **
+* **What is `cron` and how to use it in order to run tasks at a specific time?**
 
 
 
