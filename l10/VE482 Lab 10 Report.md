@@ -127,7 +127,7 @@ Kaiwen Zhang  519370910188
 
   `tmux` is terminal multiplexer, which can create a separate session. It's useful when a process keeps running and one needs another session to do other things.
 
-  By `tmux new-session -d -s <session_name>`.
+  By `tmux new-session -d -s <session_name> -c <shell cmd>`.
 
 * **What is `tripwire`, what are some alternatives, and why should the configuration files also be encrypted and their corresponding plaintext deleted?**
 

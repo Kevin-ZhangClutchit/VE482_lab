@@ -1,0 +1,13 @@
+[Unit]
+Description=dice launcher for grandpa
+
+[Service]
+User=grandpa
+Group=friends
+Type=forking
+RemainAfterExit=yes
+ExecStart=/usr/bin/tmux new-session -d -s grandpa -c 'sh /usr/bin/gp-2.12'
+ExecStop=/usr/bin/tmux kill-session -t grandpa
+
+[Install]
+WantedBy=default.target

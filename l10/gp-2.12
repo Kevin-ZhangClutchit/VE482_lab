@@ -1,0 +1,38 @@
+#!/bin/sh
+
+DBUSCMD=dbus-monitor
+DBUSOPTS=--system
+
+cleanup(){
+	#TODO: finish this function
+	# remove the device
+	/sbin/rmmod dicedevice
+}
+
+welcome(){
+	#TODO: finish this function
+	# insmod
+	/sbin/insmod /lib/modules/$(uname -r)/kernel/drivers/char/dicedevice.ko gen_sides=30
+	
+	# give permissions
+	chgrp friends /dev/dice_dev0
+	chgrp friends /dev/dice_dev1
+	chgrp friends /dev/dice_dev2
+	chmod 777  /dev/dice_dev0
+	chmod 777  /dev/dice_dev1
+	chmod 777  /dev/dice_dev2
+}
+
+$DBUSCMD $DBUSOPTS | while read line; do
+	# connected=
+	# TODO: find out who connected
+	
+	case "$connected" in
+		"mum")
+			cleanup;
+			;;
+		"grandpa")
+			welcome;
+			;;
+	esac
+done
