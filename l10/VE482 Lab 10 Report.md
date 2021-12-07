@@ -36,19 +36,36 @@ Kaiwen Zhang  519370910188
 #### Hacking mum’s computer  
 
 - **How adjust the PATH, ensure its new version is loaded but then forgotten?**
-
-  
+  * Modify `~/.bashrc`,  add `export PATH=$PATH:/place/with/the/file` as the end of the file
+  * Remove this line after this shell script has been executed after booting.
 
 * **What is the exact behaviour of `su` when wrong password is input?**
   
+  Wait several seconds and then a line printed:
   
+  ```text
+  su: Authentication failure
+  ```
   
 * **When using the `read` command how to hide the user input?**
   
+  `read -s`
   
+* **How to send an email from the command line?** [3]
   
-* **How to send an email from the command line?**
+  * `sendmail user@example.com  < email.txt`
   
+  * `mail -s "Subject" user@example.com < /dev/null`
+  
+  * `mutt -s "Subject" user@example.com < /dev/null`
+  
+  * ```shell
+    ssmtp user@example.com 
+    Subject: Test SSMTP Email
+    Email send test using SSMTP
+    via SMTP server.
+    ^d
+    ```
   
 #### Automatic setup    
 
@@ -129,4 +146,6 @@ Kaiwen Zhang  519370910188
 [1] [How to Create Groups in Linux (groupadd Command) | Linuxize](https://linuxize.com/post/how-to-create-groups-in-linux/#:~:text=The general syntax for the groupadd command is,type groupadd followed by the new group name.)
 
 [2] [udev(8) - Linux man page (die.net)](https://linux.die.net/man/8/udev)
+
+[3] [5 Ways To Send Email from Linux Command Line - TecAdmin](https://tecadmin.net/ways-to-send-email-from-linux-command-line/)
 
