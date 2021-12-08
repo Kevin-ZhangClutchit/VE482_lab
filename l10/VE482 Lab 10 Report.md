@@ -182,7 +182,6 @@ sudo touch dicedevice.conf
 # Vim it like
 $ cat dicedevice.conf 
 options dicedevice gen_sides=150
-
 ```
 
 Then run `sudo depmod` to enable the changes.
@@ -194,8 +193,6 @@ root@kevinzhang-virtual-machine:/dev# echo 5 > dice_dev2
 root@kevinzhang-virtual-machine:/dev# cat dice_dev2
 6 82 35 116 139 
 ```
-
-
 
 ### Hacking password
 
@@ -264,7 +261,103 @@ sudo chmod u+s su
 
 ![result email](./res_2.png)
 
+### Automatic setup
 
+#### .rules file
+
+Use `udevadm info --attribute-walk --name <device_name>` to get information of a certain device:
+
+![image-20211208221459244](.\udevadm.png)
+
+So we can write the `10-dice.rules` file:
+
+```
+KERNEL=="dice_dev0" \
+, KERNEL=="dice_dev1" \
+, KERNEL=="dice_dev2" \
+, SUBSYSTEM=="dice_class" \
+, GROUP="friends" \
+, MODE="0777"
+```
+
+Copy the file to `/etc/udev/rules.d` and run `sudo udevadm control --reload` to load changes.
+
+#### `gp-2.12`
+
+The file should be moved to `/usr/bin`
+
+```sh
+#!/bin/sh
+DBUSCMD=dbus-monitor
+DBUSOPTS=--system
+DBUSOPTS2=--profile
+
+cleanup(){
+	#TODO: finish this function
+	# remove the device
+	/sbin/rmmod dicedevice
+}
+
+welcome(){
+	#TODO: finish this function
+	# insmod
+	/sbin/insmod /lib/modules/$(uname -r)/kernel/drivers/char/dicedevice.ko gen_sides=30
+
+	# give permissions
+	chgrp friends /dev/dice_dev0
+	chgrp friends /dev/dice_dev1
+	chgrp friends /dev/dice_dev2
+
+	chmod 777  /dev/dice_dev0
+	chmod 777  /dev/dice_dev1
+	chmod 777  /dev/dice_dev2
+}
+
+$DBUSCMD $DBUSOPTS $DBUSOPTS2 | while read line; do
+	# TODO: find out who connected
+	#echo "${line}"
+	#echo "${connected}" #DEBUG usage, comment it in submitted version
+	connected=$(echo "${line}" | awk '{print $7}'); #in profile mode, with separate by space, the 7th column is interface
+
+	case "$connected" in
+		"mum")
+			cleanup;
+			;;
+		"grandpa")
+			welcome;
+			;;
+	esac
+done
+```
+
+#### `gp.service`
+
+Move this file to `/etc/systemd/system`:
+
+```
+[Unit]
+Description=dice launcher for grandpa
+
+[Service]
+Type=forking
+RemainAfterExit=yes
+ExecStart=/usr/bin/tmux new-session -d -s grandpa -c 'sh /usr/bin/gp-2.12'
+ExecStop=/usr/bin/tmux kill-session -t grandpa
+
+[Install]
+WantedBy=default.target
+```
+
+#### Test
+
+Run:
+
+```bash
+systemctl daemon-reload # load changes
+systemctl start gp # will then launch a tmux session silently
+```
+
+![image-20211208231922416](.\tmux)
 
 ## Reference
 
