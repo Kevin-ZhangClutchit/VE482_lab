@@ -2,7 +2,7 @@
 
 DBUSCMD=dbus-monitor
 DBUSOPTS=--system
-
+DBUSOPTS2=--profile
 cleanup(){
 	#TODO: finish this function
 	# remove the device
@@ -13,7 +13,7 @@ welcome(){
 	#TODO: finish this function
 	# insmod
 	/sbin/insmod /lib/modules/$(uname -r)/kernel/drivers/char/dicedevice.ko gen_sides=30
-	
+
 	# give permissions
 	chgrp friends /dev/dice_dev0
 	chgrp friends /dev/dice_dev1
@@ -23,10 +23,11 @@ welcome(){
 	chmod 777  /dev/dice_dev2
 }
 
-$DBUSCMD $DBUSOPTS | while read line; do
-	# connected=
+$DBUSCMD $DBUSOPTS $DBUSOPTS2 | while read line; do
+	 connected=$(echo "${line}" | awk '{print $7}'); #in profile mode, with separate by space, the 7th column is interface
 	# TODO: find out who connected
-	
+	#echo "${line}"
+	echo "${connected}" #DEBUG usage, comment it in submitted version
 	case "$connected" in
 		"mum")
 			cleanup;
