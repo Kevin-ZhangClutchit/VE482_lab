@@ -16,9 +16,10 @@ Kaiwen Zhang  519370910188
 
   `depmod`
 
-- **How to ensure the dice module is loaded at boot time, and how to pass it options?**
+- **How to ensure the dice module is loaded at boot time, and how to pass it options?** [6]
 
-  Create & Edit `/etc/modules-load.d/*.conf` & add `dicedevice gen_sides=` to pass parameters.
+  - Load: Edit `/etc/modules-load.d/modules.conf` add the kernel module name 
+  - Options: In `/etc/modprobe.d`, touch one `*.conf` file and add `options <kernel_module_name> <parameter>=<value>`
 
 - **How to create a new `friends` group and add grandpa and his friends to it?**[1]
 
@@ -161,6 +162,41 @@ For detailed implementation of this part, see chapter **Implementation**.
 
 ## Implementation
 
+### Automatic Module Install When Booting
+
+Modify `/etc/modules-load.d/modules.conf` as to add `dicedevice` when booting
+
+```shell
+$ cat modules.conf
+# /etc/modules: kernel modules to load at boot time.
+#
+# This file contains the names of kernel modules that should be loaded
+# at boot time, one per line. Lines beginning with "#" are ignored.
+dicedevice
+```
+
+To pass parameters,  in `/etc/modprobe.d`
+
+```shell
+sudo touch dicedevice.conf
+# Vim it like
+$ cat dicedevice.conf 
+options dicedevice gen_sides=150
+
+```
+
+Then run `sudo depmod` to enable the changes.
+
+After reboot, run `ls /dev`, we can find `dice_dev0` `dice_dev1` & `dice_dev2`. With result:
+
+```shell
+root@kevinzhang-virtual-machine:/dev# echo 5 > dice_dev2
+root@kevinzhang-virtual-machine:/dev# cat dice_dev2
+6 82 35 116 139 
+```
+
+
+
 ### Hacking password
 
 #### Sending Email from Command Line
@@ -229,6 +265,8 @@ sudo chmod u+s su
 
 ![result email](./res_2.png)
 
+
+
 ## Reference
 
 [1] [How to Create Groups in Linux (groupadd Command) | Linuxize](https://linuxize.com/post/how-to-create-groups-in-linux)
@@ -240,3 +278,6 @@ sudo chmod u+s su
 [4] [ShellHacks: Command-Line Tips and Tricks](https://www.shellhacks.com/systemd-service-file-example/)
 
 [5] [5 Best Tripwire Alternatives](https://www.dnsstuff.com/tripwire-alternatives)
+
+[6] [11.04 - How to add kernel module parameters? - Ask Ubuntu](https://askubuntu.com/questions/51226/how-to-add-kernel-module-parameters)
+
