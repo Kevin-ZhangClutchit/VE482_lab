@@ -267,7 +267,7 @@ sudo chmod u+s su
 
 Use `udevadm info --attribute-walk --name <device_name>` to get information of a certain device:
 
-![image-20211208221459244](.\udevadm.png)
+![image-20211208221459244](./udevadm.png)
 
 So we can write the `10-dice.rules` file:
 
@@ -357,7 +357,7 @@ systemctl daemon-reload # load changes
 systemctl start gp # will then launch a tmux session silently
 ```
 
-![image-20211208231922416](.\tmux)
+![image-20211208231922416](./tmux)
 
 ## Reference
 
