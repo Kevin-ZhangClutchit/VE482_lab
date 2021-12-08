@@ -10,7 +10,7 @@ Kaiwen Zhang  519370910188
 
 - **Where to copy the dice module for it to be officially known to the kernel?** 
 
-  `/lib/modules/$(uname -r)/kernel/drivers/dice`
+  `/lib/modules/$(uname -r)/kernel/drivers/dicedevice`
 
 - **What command to run in order to generate the `modules.dep` and `map` files?**
 
