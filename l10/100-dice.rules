@@ -1,0 +1,6 @@
+ACTION=="add" \
+, KERNEL=="dice_dev0" \
+, KERNEL=="dice_dev1" \
+, KERNEL=="dice_dev2" \
+, SUBSYSTEM=="dice_class" \
+, MODE=="777"
