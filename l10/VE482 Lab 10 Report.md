@@ -188,11 +188,7 @@ Then run `sudo depmod` to enable the changes.
 
 After reboot, run `ls /dev`, we can find `dice_dev0` `dice_dev1` & `dice_dev2`. With result:
 
-```shell
-root@kevinzhang-virtual-machine:/dev# echo 5 > dice_dev2
-root@kevinzhang-virtual-machine:/dev# cat dice_dev2
-6 82 35 116 139 
-```
+![dice result](./res_dev.png)
 
 ### Hacking password
 
