@@ -284,6 +284,7 @@ The file should be moved to `/usr/bin`
 
 ```sh
 #!/bin/sh
+
 DBUSCMD=dbus-monitor
 DBUSOPTS=--system
 DBUSOPTS2=--profile
@@ -311,9 +312,14 @@ welcome(){
 
 $DBUSCMD $DBUSOPTS $DBUSOPTS2 | while read line; do
 	# TODO: find out who connected
-	#echo "${line}"
-	#echo "${connected}" #DEBUG usage, comment it in submitted version
-	connected=$(echo "${line}" | awk '{print $7}'); #in profile mode, with separate by space, the 7th column is interface
+	name=$(echo "${line}" | awk '{print $7}') #in profile mode, with separate by space, the 7th column is interface
+	re=$(dbus-send --system --type=method_call --print-reply --dest=org.freedesktop.DBus / org.freedesktop.DBus.GetConnectionUnixUser string:"${name}")
+	uid=${${re}: 0-4}
+	if [ $uid == "1001" ] ;then
+		connected="grandpa"
+	else
+		connected="mum"
+	fi
 
 	case "$connected" in
 		"mum")
